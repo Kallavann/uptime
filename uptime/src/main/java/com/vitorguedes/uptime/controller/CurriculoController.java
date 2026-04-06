@@ -1,7 +1,7 @@
 package com.vitorguedes.uptime.controller;
 
 import com.vitorguedes.uptime.service.EmailService;
-import com.vitorguedes.uptime.service.WhatsAppService;
+import jakarta.mail.MessagingException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,30 +12,38 @@ import org.springframework.web.multipart.MultipartFile;
 public class CurriculoController {
 
     private final EmailService emailService;
-    private final WhatsAppService whatsAppService;
 
-    public CurriculoController(EmailService emailService, WhatsAppService whatsAppService) {
+    public CurriculoController(EmailService emailService) {
         this.emailService = emailService;
-        this.whatsAppService = whatsAppService;
     }
 
     @PostMapping
     public ResponseEntity<String> receberCurriculo(
             @RequestParam("arquivo") MultipartFile arquivo,
             @RequestParam("email") String email
-    ) throws Exception {
+    ) {
+        if (arquivo.isEmpty()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Nenhum arquivo foi enviado");
+        }
 
-        emailService.enviarCurriculo(email, arquivo);
+        try {
+            emailService.enviarCurriculo(email, arquivo);
+            return ResponseEntity.ok("Currículo recebido com sucesso!");
 
-        String mensagem = String.format(
-                "📄 *Novo Currículo - Uptime Consultoria*\n\n" +
-                        "📧 Candidato: %s\n" +
-                        "📎 Arquivo: %s\n\n" +
-                        "✅ PDF enviado para o seu e-mail!",
-                email, arquivo.getOriginalFilename()
-        );
-        whatsAppService.enviar(mensagem);
+        } catch (MessagingException e) {
+            System.err.println("Erro ao enviar e-mail: " + e.getMessage());
+            return  ResponseEntity
+                    .status(500)
+                    .body("Erro ao enviar o e-mail. Tente novamente.");
 
-        return ResponseEntity.ok("Currículo recebido com sucesso!");
+        } catch (Exception e) {
+            System.err.println("Erro inesperado: " + e.getMessage());
+            return ResponseEntity
+                    .status(500)
+                    .body("Erro interno. Tente novamente mais tarde.");
+        }
+
     }
 }

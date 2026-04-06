@@ -2,7 +2,7 @@ package com.vitorguedes.uptime.controller;
 
 
 import com.vitorguedes.uptime.dto.ContatoDTO;
-import com.vitorguedes.uptime.service.WhatsAppService;
+import com.vitorguedes.uptime.service.EmailService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,23 +11,23 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class ContatoController {
 
-    private final WhatsAppService whatsAppService;
+    private final EmailService emailService;
 
-    public ContatoController(WhatsAppService whatsAppService){
-        this.whatsAppService = whatsAppService;
+    public ContatoController(EmailService emailService) {
+        this.emailService = emailService;
     }
-        @PostMapping
-        public ResponseEntity<String> receberContato(@RequestBody ContatoDTO dto) {
-        String mensagem = String.format(
-                "🔔 *Novo contato - Uptime Consultoria*\n\n" +
-                        "👤 Nome: %s\n" +
-                        "📧 E-mail: %s\n" +
-                        "📱 Telefone: %s\n" +
-                        "💬 Mensagem: %s",
-                dto.nome(), dto.email(), dto.telefone(), dto.mensagem()
-        );
-        whatsAppService.enviar(mensagem);
-        return ResponseEntity.ok("Contato recebido com sucesso!");
 
+    @PostMapping
+    public ResponseEntity<String> receberContato(@RequestBody ContatoDTO dto) {
+        try {
+            emailService.enviarContato(dto);
+            return ResponseEntity.ok("Mensagem recebida com sucesso!");
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar e-mail: " + e.getMessage());
+            return ResponseEntity
+                    .status(500)
+                    .body("Erro ao enviar mensagem. Tente novamente.");
         }
+
     }
+}

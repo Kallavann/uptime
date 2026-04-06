@@ -1,5 +1,6 @@
 package com.vitorguedes.uptime.service;
 
+import com.vitorguedes.uptime.dto.ContatoDTO;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,23 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
+    //E-mail do formulario de contato
+    public void enviarContato(ContatoDTO dto) throws MessagingException{
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setTo(emailDestino);
+        helper.setSubject("🔔 Novo Contato - Uptime Consultoria");
+        helper.setText("Nome: " + dto.nome() + "\n" +
+                "E-mail: " + dto.email() + "\n" +
+                "Telefone: " + dto.telefone() + "\n\n" +
+                "Mensagem:\n" + dto.mensagem()
+        );
+
+        mailSender.send(message);
+    }
+
+    // E-mail com curriculo anexado
     public void enviarCurriculo(String emailRemetente, MultipartFile arquivo)
         throws MessagingException{
         MimeMessage message = mailSender.createMimeMessage();
