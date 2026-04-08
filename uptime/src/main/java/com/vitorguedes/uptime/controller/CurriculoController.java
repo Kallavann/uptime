@@ -1,20 +1,19 @@
 package com.vitorguedes.uptime.controller;
 
-import com.vitorguedes.uptime.service.EmailService;
-import jakarta.mail.MessagingException;
+import com.vitorguedes.uptime.service.CurriculoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/curriculo")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class CurriculoController {
 
-    private final EmailService emailService;
+    private final CurriculoService curriculoService;
 
-    public CurriculoController(EmailService emailService) {
-        this.emailService = emailService;
+    public CurriculoController( CurriculoService curriculoService) {
+        this.curriculoService = curriculoService;
     }
 
     @PostMapping
@@ -44,7 +43,7 @@ public class CurriculoController {
         }
 
         try {
-            emailService.enviarCurriculo(email, arquivo);
+            curriculoService.processar(email, arquivo);
             return ResponseEntity.ok("Currículo recebido com sucesso!");
 
         } catch (Exception e) {
