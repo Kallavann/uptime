@@ -43,6 +43,7 @@ public class EmailService {
             mailSender.send(message);
 
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Erro ao enviar e-mail de contato", e);
         }
     }
@@ -70,6 +71,7 @@ public class EmailService {
             mailSender.send(message);
 
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Erro ao enviar currículo", e);
         }
     }
