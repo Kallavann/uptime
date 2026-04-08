@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/contato")
-@CrossOrigin(origins = "https://uptime-mentoria.vercel.app/contato")
+@CrossOrigin(origins = "https://uptime-mentoria.vercel.app")
 public class ContatoController {
 
     private final ContatoService contatoService;

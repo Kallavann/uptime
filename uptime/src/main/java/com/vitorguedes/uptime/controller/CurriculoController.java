@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/curriculo")
-@CrossOrigin(origins = "https://uptime-mentoria.vercel.app/curriculo")
+@CrossOrigin(origins = "https://uptime-mentoria.vercel.app")
 public class CurriculoController {
 
     private final CurriculoService curriculoService;
