@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/curriculo")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class CurriculoController {
 
     private final EmailService emailService;
@@ -22,28 +22,35 @@ public class CurriculoController {
             @RequestParam("arquivo") MultipartFile arquivo,
             @RequestParam("email") String email
     ) {
+
         if (arquivo.isEmpty()) {
-            return ResponseEntity
-                    .badRequest()
-                    .body("Nenhum arquivo foi enviado");
+            return ResponseEntity.badRequest().body("Nenhum arquivo foi enviado");
+        }
+
+        // valida tipo
+        String tipo = arquivo.getContentType();
+        if (tipo == null ||
+                (!tipo.equals("application/pdf") &&
+                        !tipo.equals("application/msword") &&
+                        !tipo.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))) {
+
+            return ResponseEntity.badRequest()
+                    .body("Formato inválido. Envie PDF ou DOC/DOCX.");
+        }
+
+        // valida email
+        if (email == null || !email.contains("@")) {
+            return ResponseEntity.badRequest().body("Email inválido");
         }
 
         try {
             emailService.enviarCurriculo(email, arquivo);
             return ResponseEntity.ok("Currículo recebido com sucesso!");
 
-        } catch (MessagingException e) {
-            System.err.println("Erro ao enviar e-mail: " + e.getMessage());
-            return  ResponseEntity
-                    .status(500)
-                    .body("Erro ao enviar o e-mail. Tente novamente.");
-
         } catch (Exception e) {
-            System.err.println("Erro inesperado: " + e.getMessage());
             return ResponseEntity
                     .status(500)
-                    .body("Erro interno. Tente novamente mais tarde.");
+                    .body("Erro ao processar o currículo.");
         }
-
     }
 }

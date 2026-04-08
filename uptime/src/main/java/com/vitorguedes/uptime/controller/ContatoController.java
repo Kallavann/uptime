@@ -2,6 +2,7 @@ package com.vitorguedes.uptime.controller;
 
 
 import com.vitorguedes.uptime.dto.ContatoDTO;
+import com.vitorguedes.uptime.service.ContatoService;
 import com.vitorguedes.uptime.service.EmailService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,16 +12,16 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class ContatoController {
 
-    private final EmailService emailService;
+    private final ContatoService contatoService;
 
-    public ContatoController(EmailService emailService) {
-        this.emailService = emailService;
+    public ContatoController(ContatoService contatoService) {
+        this.contatoService = contatoService;
     }
 
     @PostMapping
     public ResponseEntity<String> receberContato(@RequestBody ContatoDTO dto) {
         try {
-            emailService.enviarContato(dto);
+            contatoService.processarContato(dto);
             return ResponseEntity.ok("Mensagem recebida com sucesso!");
         } catch (Exception e) {
             System.err.println("Erro ao enviar e-mail: " + e.getMessage());
