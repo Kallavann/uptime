@@ -39,8 +39,8 @@ public class EmailService {
             restTemplate.postForEntity(RESEND_URL, request, String.class);
 
         } catch (Exception e) {
+            System.out.println("ERRO REAL ↓↓↓");
             e.printStackTrace();
-            throw new RuntimeException("Erro ao enviar contato");
         }
     }
 
@@ -75,8 +75,7 @@ public class EmailService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return;
-            //throw new RuntimeException("Erro ao enviar currículo");//
+            throw new RuntimeException("Erro ao enviar currículo");//
         }
     }
 }
