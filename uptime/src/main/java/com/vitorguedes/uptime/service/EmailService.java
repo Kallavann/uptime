@@ -14,6 +14,9 @@ public class EmailService {
     private final JavaMailSender mailSender;
 
     @Value("${spring.mail.username}")
+    private String emailRemetente;
+
+    @Value("${APP_EMAIL_DESTINO}")
     private String emailDestino;
 
     public EmailService(JavaMailSender mailSender) {
@@ -25,7 +28,7 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(emailDestino);
+            helper.setFrom(emailRemetente);
             helper.setTo(emailDestino);
             helper.setSubject("🔔 Novo Contato - Uptime Consultoria");
             helper.setText("""
@@ -52,7 +55,7 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(emailDestino);
+            helper.setFrom(emailRemetente);
             helper.setTo(emailDestino);
             helper.setSubject("📄 Novo Currículo Recebido - Uptime Consultoria");
             helper.setText(
