@@ -35,12 +35,12 @@ public class EmailService {
             """.formatted(dto.nome(), dto.email(), dto.telefone(), dto.mensagem());
 
             HttpEntity<String> request = new HttpEntity<>(body, headers);
-
             restTemplate.postForEntity(RESEND_URL, request, String.class);
 
         } catch (Exception e) {
-            System.out.println("ERRO REAL ↓↓↓");
+            System.out.println("Erro ao enviar contato:");
             e.printStackTrace();
+            throw new RuntimeException("Erro ao enviar contato", e);
         }
     }
 
@@ -53,29 +53,32 @@ public class EmailService {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             String arquivoBase64 = Base64.getEncoder().encodeToString(arquivo.getBytes());
+            String nomeArquivo = arquivo.getOriginalFilename() != null
+                    ? arquivo.getOriginalFilename()
+                    : "curriculo.pdf";
 
             String body = """
             {
               "from": "Uptime <onboarding@resend.dev>",
               "to": ["consultoriauptimee@gmail.com"],
               "subject": "Novo Currículo Recebido",
-              "html": "<p>Email do candidato: %s</p>",
-              System.out.println("API KEY: " + apiKey);: [
+              "html": "<p><b>Email do candidato:</b> %s</p>",
+              "attachments": [
                 {
                   "filename": "%s",
                   "content": "%s"
                 }
               ]
             }
-            """.formatted(emailRemetente, arquivo.getOriginalFilename(), arquivoBase64);
+            """.formatted(emailRemetente, nomeArquivo, arquivoBase64);
 
             HttpEntity<String> request = new HttpEntity<>(body, headers);
-
             restTemplate.postForEntity(RESEND_URL, request, String.class);
 
         } catch (Exception e) {
+            System.out.println("Erro ao enviar currículo:");
             e.printStackTrace();
-            throw new RuntimeException("Erro ao enviar currículo");//
+            throw new RuntimeException("Erro ao enviar currículo", e);
         }
     }
 }
