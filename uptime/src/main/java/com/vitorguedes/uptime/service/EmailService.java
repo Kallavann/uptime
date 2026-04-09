@@ -1,41 +1,44 @@
 package com.vitorguedes.uptime.service;
 
 import com.vitorguedes.uptime.dto.ContatoDTO;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Base64;
 
 @Service
 public class EmailService {
 
-    @Value("${RESEND_API_KEY}")
-    private String apiKey;
+    private final JavaMailSender mailSender;
 
-    private final String RESEND_URL = "https://api.resend.com/emails";
+    @Value("${spring.mail.username}")
+    private String emailDestino;
+
+    public EmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     public void enviarContato(ContatoDTO dto) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + apiKey);
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            helper.setFrom(emailDestino);
+            helper.setTo(emailDestino);
+            helper.setSubject("🔔 Novo Contato - Uptime Consultoria");
+            helper.setText("""
+                <h2>📩 Novo Contato</h2>
+                <p><b>Nome:</b> %s</p>
+                <p><b>Email:</b> %s</p>
+                <p><b>Telefone:</b> %s</p>
+                <hr>
+                <p><b>Mensagem:</b></p>
+                <p>%s</p>
+            """.formatted(dto.nome(), dto.email(), dto.telefone(), dto.mensagem()), true);
 
-            String body = """
-            {
-              "from": "Uptime <onboarding@resend.dev>",
-              "to": ["consultoriauptimee@gmail.com"],
-              "subject": "Novo Contato - Uptime",
-              "html": "<h2>Novo Contato</h2><p><b>Nome:</b> %s</p><p><b>Email:</b> %s</p><p><b>Telefone:</b> %s</p><p><b>Mensagem:</b> %s</p>"
-            }
-            """.formatted(dto.nome(), dto.email(), dto.telefone(), dto.mensagem());
-
-            HttpEntity<String> request = new HttpEntity<>(body, headers);
-            restTemplate.postForEntity(RESEND_URL, request, String.class);
+            mailSender.send(message);
 
         } catch (Exception e) {
             System.out.println("Erro ao enviar contato:");
@@ -46,34 +49,22 @@ public class EmailService {
 
     public void enviarCurriculo(String emailRemetente, MultipartFile arquivo) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + apiKey);
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            helper.setFrom(emailDestino);
+            helper.setTo(emailDestino);
+            helper.setSubject("📄 Novo Currículo Recebido - Uptime Consultoria");
+            helper.setText(
+                    "<p><b>Email do candidato:</b> " + emailRemetente + "</p>", true
+            );
 
-            String arquivoBase64 = Base64.getEncoder().encodeToString(arquivo.getBytes());
             String nomeArquivo = arquivo.getOriginalFilename() != null
                     ? arquivo.getOriginalFilename()
                     : "curriculo.pdf";
+            helper.addAttachment(nomeArquivo, arquivo);
 
-            String body = """
-            {
-              "from": "Uptime <onboarding@resend.dev>",
-              "to": ["consultoriauptimee@gmail.com"],
-              "subject": "Novo Currículo Recebido",
-              "html": "<p><b>Email do candidato:</b> %s</p>",
-              "attachments": [
-                {
-                  "filename": "%s",
-                  "content": "%s"
-                }
-              ]
-            }
-            """.formatted(emailRemetente, nomeArquivo, arquivoBase64);
-
-            HttpEntity<String> request = new HttpEntity<>(body, headers);
-            restTemplate.postForEntity(RESEND_URL, request, String.class);
+            mailSender.send(message);
 
         } catch (Exception e) {
             System.out.println("Erro ao enviar currículo:");
