@@ -24,8 +24,11 @@ public class ContatoController {
             contatoService.processarContato(dto);
             return ResponseEntity.ok("Mensagem recebida com sucesso!");
         } catch (Exception e) {
-            e.printStackTrace();;
-        }
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(500)
+                    .body("Erro ao enviar mensagem");
 
+        }
     }
 }
